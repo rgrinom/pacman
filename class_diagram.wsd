@@ -1,0 +1,349 @@
+@startuml Pacman
+skinparam ClassAttributeIconSize 0
+
+class Application {
+  +Application(const ApplicationMode& mode, const std::string& config_file)
+  +Run()
+
+  -ui_: UI*
+  -logic_: Logic 
+}
+
+abstract class Ghost {
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  {abstract} #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+class Grid {
+  +Grid()
+  +Load(const std::string& config_file): int32_t
+  +Set(Point p, ObjectId obj)
+  +At(Point p) const: ObjectId
+  +Point GetSize() const
+  +Reset()
+
+  -is_constructed_: bool
+  -width_: uint32_t
+  -height_: uint32_t
+  -init_objects_: std::vector<std::vector<ObjectId>>
+  -objects_: std::vector<std::vector<ObjectId>>
+}
+
+class Logic {
+  +Logic()
+  +LoadObjects(const std::string& config_file)
+  +Run()
+  +ResetMovingObjects()
+  +GridAt(Point p) const: ObjectId
+  +GetGridSize() const: Point
+  +GetPacmanPos() const: Point
+  +GetGhostsCnt() const: uint32_t
+  +GetGhostType(uint32_t ind) const: GhostId
+  +GetGhostPos(uint32_t ind) const: Point
+  +SetPacmanDir(MovingObject::DirId dir_id)
+
+  -grid_: Grid
+  -pacman_: MovingObject
+  -statistics_: Statistics
+  -ghosts_: std::vector<Ghost*>
+}
+
+class MovingObject {
+  +MovingObject()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +Move(const Grid& grid)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+}
+
+class Point {
+  {static} +kEps: const double
+  +x: double
+  +y: double
+  +Point(double x, double y)
+  +operator+=(const Point& p): Point&
+  +operator-=(const Point& p): Point&
+  +operator*=(double k): Point&
+  +operator/=(double K): Point&
+  +Len2() const: double
+  +Len() const: double
+}
+
+class RedGhost {
+  +RedGhost()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+class BlueGhost {
+  +BlueGhost()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+class PinkGhost {
+  +PinkGhost()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+class YellowGhost {
+  +YellowGhost()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+class SfmlUI {
+  +SfmlUI(Logic& logic, const Point& size)
+  +Run(): bool
+
+  #Draw()
+  #DrawGrid()
+  #DrawWall(const Point& pos)
+  #DrawBuff(const Point& pos)
+  #DrawCoin(const Point& pos)
+  #DrawPacman()
+  #DrawGhosts()
+  #CheckClicks()
+
+  -block_size_: double
+  -window_: sf::RenderWindow
+  -IsKeyClicked(sf::Keyboard::Key key, uint32_t ind): bool
+  -is_pressed_: std::vector<bool>
+  -wall_: sf::RectangleShape
+  -buff_: sf::CircleShape
+  -coin_: sf::CircleShape
+  -pacman_: sf::CircleShape
+  -red_ghost_: sf::CircleShape
+  -LoadSfmlObjects()
+}
+
+class ConsoleUI {
+  +ConsoleUI(Logic& logic, const Point& size)
+  +Run(): bool
+
+  #Draw()
+  #DrawGrid()
+  #DrawWall(const Point& pos)
+  #DrawBuff(const Point& pos)
+  #DrawCoin(const Point& pos)
+  #DrawPacman()
+  #DrawGhosts()
+  #CheckClicks()
+
+  -block_size_: double
+  -IsKeyClicked(uint32_t ind): bool
+  -is_pressed_: std::vector<bool>
+}
+
+class Statistics {
+  +Statistics()
+  +Load(const std::string& config_file)
+  +DecreaseLives()
+  +AddCoinScore()
+  +AddBonusScore()
+  +IsAlive(): bool
+  +HasWon(): bool
+  +GetLives(): int32_t
+  +GetScore(): int32_t
+  +Reset()
+
+  -init_lives_: int32_t
+  -lives_: int32_t
+  -score_: int32_t
+  -coin_score_: int32_t
+  -bonus_score_: int32_t
+  -init_coins_cnt_: int32_t
+  -coins_cnt_: int32_t
+}
+
+abstract class UI {
+  +UI(Logic& logic_)
+  {abstract} +Run(): bool
+
+  #Logic& logic_
+  {abstract} #Draw()
+  {abstract} #DrawGrid()
+  {abstract} #DrawWall(const Point& pos)
+  {abstract} #DrawBuff(const Point& pos)
+  {abstract} #DrawCoin(const Point& pos)
+  {abstract} #DrawPacman()
+  {abstract} #DrawGhosts()
+  {abstract} #DrawRedGhost(const Point& pos)
+  {abstract} #CheckClicks()
+}
+
+enum ApplicationMode {
+  Console
+  Sfml
+}
+
+enum ApplicationMode {
+  Console
+  Sfml
+}
+
+enum GhostId {
+  Red
+  Blue
+  Pink
+  Yellow
+}
+
+enum ObjectId {
+  Nothing
+  Wall
+  Coin
+  Buff
+  Bonus
+}
+
+enum DirId {
+  Left
+  Right
+  Up
+  Down
+}
+
+Application +.. ApplicationMode
+Ghost +.. GhostId
+Grid +.. ObjectId
+MovingObject +.. DirId
+
+Application *-- Logic
+Application *-- UI
+
+Logic *-- Grid
+Logic *-- MovingObject
+Logic *-- Statistics
+Logic *-- Ghost
+
+UI -- Logic
+UI <|.. SfmlUI
+UI <|.. ConsoleUI
+
+MovingObject <|-- Ghost
+Ghost <|.. RedGhost
+Ghost <|.. BlueGhost
+Ghost <|.. PinkGhost
+Ghost <|.. YellowGhost
+
+UI -- Point
+Grid -- Point
+MovingObject -- Point
+
+@enduml
