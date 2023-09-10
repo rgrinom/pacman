@@ -1,23 +1,25 @@
 #pragma once
 
 #include "logic.hpp"
+#include "statistics.hpp"
 
 class UI {
  public:
-  UI(Logic& logic_);
-  virtual bool Run() = 0;
+  enum class Signal: int16_t {
+    Nothing,
+    WindowClosed,
+    Paused,
+    Muted,
+    NewGame
+  };
+
+  UI(Logic& logic, Statistics& statistics);
+  virtual Signal Run(const Logic::Event& logic_event) = 0;
 
  protected:
   Logic& logic_;
+  Statistics& statistics_;
 
   virtual void Draw() = 0;
-  virtual void DrawGrid() = 0;
-  virtual void DrawWall(const Point& pos) = 0;
-  virtual void DrawBuff(const Point& pos) = 0;
-  virtual void DrawCoin(const Point& pos) = 0;
-  virtual void DrawPacman() = 0;
-  virtual void DrawGhosts() = 0;
-  virtual void DrawRedGhost(const Point& pos) = 0;
-
-  virtual void CheckClicks() = 0;
+  virtual Signal CheckClicks() = 0;
 };

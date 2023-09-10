@@ -6,5 +6,5 @@ class RedGhost: public Ghost {
  public:
   RedGhost();
  protected:
-  virtual void SetTarget(const Point& pacman_pos) final;
+  virtual void SetHuntingTarget(const MovingObject& pacman) final;
 };

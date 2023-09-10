@@ -2,7 +2,7 @@
 
 int32_t Grid::Load(const std::string& config_file) {
   std::ifstream config;
-  config.open("../content/" + config_file);
+  config.open("../content/configs/" + config_file);
   config >> width_ >> height_;
   init_objects_ = std::vector<std::vector<ObjectId>>(
       height_, std::vector<ObjectId>(width_, ObjectId::Nothing));

@@ -2,7 +2,6 @@
 
 RedGhost::RedGhost() { type_ = GhostId::Red; }
 
-void RedGhost::SetTarget(const Point& pacman_pos) {
-  target_ = pacman_pos;
-  target_ = (floor(target_) + ceil(target_)) / 2;
+void RedGhost::SetHuntingTarget(const MovingObject& pacman) {
+  SetTargetValue(pacman.GetPos());
 }

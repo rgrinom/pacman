@@ -17,12 +17,14 @@ class MovingObject {
   };
 
   MovingObject() = default;
-  void Load(const std::string& config_file);
+  virtual void Load(std::ifstream& config);
   void SetNextDir(DirId next_dir_id);
   void Move(const Grid& grid);
   Point GetPos() const;
-  bool Touches(const MovingObject& obj) const;
-  void Reset();
+  Point GetDir() const;
+  DirId GetDirId() const;
+  bool Touches(const Point& obj_pos) const;
+  virtual void Reset();
 
  protected:
   static const double size;

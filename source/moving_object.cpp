@@ -2,14 +2,11 @@
 
 const double MovingObject::size = 0.999;
 
-void MovingObject::Load(const std::string& config_file) {
-  std::ifstream config;
-  config.open("../content/" + config_file);
+void MovingObject::Load(std::ifstream& config) {
   int16_t spawn_dir;
   config >> spawn_pos_ >> spawn_dir >> speed_;
   spawn_dir_id_ = DirId(spawn_dir);
   Reset();
-  config.close();
 }
 
 void MovingObject::SetDir(DirId dir_id) {
@@ -79,6 +76,8 @@ bool MovingObject::TryMove(const Grid& grid) {
 }
 
 Point MovingObject::GetPos() const { return pos_; }
+Point MovingObject::GetDir() const { return dir_; }
+MovingObject::DirId MovingObject::GetDirId() const { return cur_dir_id_; }
 
 void MovingObject::Reset() {
   pos_ = spawn_pos_;
@@ -87,6 +86,6 @@ void MovingObject::Reset() {
   SetDir(cur_dir_id_);
 }
 
-bool MovingObject::Touches(const MovingObject& obj) const {
-  return dist2(pos_, obj.pos_) <= size / 2;
+bool MovingObject::Touches(const Point& obj_pos) const {
+  return dist(pos_, obj_pos) <= size / 2;
 }
