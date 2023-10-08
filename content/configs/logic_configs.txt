@@ -1,0 +1,9 @@
+grid_configs.txt
+pacman_configs.txt
+statistics_configs.txt
+
+2
+0
+red_ghost_configs.txt
+1
+pink_ghost_configs.txt

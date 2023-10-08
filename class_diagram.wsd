@@ -1,0 +1,539 @@
+@startuml Pacman
+skinparam ClassAttributeIconSize 0
+
+class Application {
+  +Application(const ApplicationMode& mode, const std::string& config_file)
+  +~Application()
+  +Run()
+
+  -ui_: UI*
+  -sounds_: Sounds*
+  -logic_: Logic
+  -statistics_: Statistics
+  -state_: AppState
+}
+
+class BuffSfmlDrawer {
+  +BuffSfmlDrawer(double block_size)
+  +Draw(sf::RenderWindow& window, const Point& pos)
+
+  -buff_: sf::CircleShape
+}
+
+class CoinSfmlDrawer {
+  +CoinSfmlDrawer(double block_size)
+  +Draw(sf::RenderWindow& window, const Point& pos)
+
+  -coin_: sf::CircleShape
+}
+
+class GameoverSfmlDrawer {
+  +GameoverSfmlDrawer(Statistics& statistics, const Point& roi_pos, const Point& roi_size)
+  +Draw(sf::RenderWindow& window)
+
+  -statistics_: Statistics&
+  -roi_pos_: Point
+  -roi_size_: Point
+  -bg_texture_: sf::Texture
+  -bg_rect_: sf::RectangleShape
+  -font_: sf::Font
+  -score_: sf::Text
+}
+
+class GhostSfmlDrawer {
+  +GhostSfmlDrawer(double block_size, const Ghost::GhostId& type)
+  +Draw(sf::RenderWindow& window, const Point& pos, const Ghost::GhostState& state, const MovingObject::DirId& dir, bool paused)
+
+  -step_: int
+  -texture_: sf::Texture
+  -scared_texture_: sf::Texture
+  -ghost_: sf::RectangleShape
+  -scared_ghost_: sf::RectangleShape
+}
+
+abstract class Ghost {
+  +Load(std::ifstream& config)
+  +SetState(const GhostState& new_state)
+  +GetType() const: GhostId
+  +GetState() const: GhostState
+  +Move(const Grid& grid, const MovingObject& pacman)
+  +Reset()
+  +LevelUp()
+
+  #SetTarget(const MovingObject& pacman)
+  {abstract} #SetHuntingTarget(const MovingObject& pacman)
+  #SetWanderingTarget()
+  #SetRevivingTarget()
+  #ChangeState()
+  #SetTargetValue(const Point& target)
+  #move_iterations_: uint32_t
+  #target_: Point
+  #type_: GhostId
+  #hunting_period_time_: int64_t
+  #wandering_period_time_: int64_t
+  #running_period_time_: int64_t
+  #hunting_period_change_: int64_t
+  #wandering_period_change_: int64_t
+  #running_period_change_: int64_t
+  #wandering_period_limit_: int64_t
+  #running_period_limit_: int64_t
+  #cur_state_: GhostState
+  #timer_: int64_t
+  #cur_state_time_: int64_t
+  #wandering_targets_: std::vector<Point>
+  #rd_: std::random_device
+  #gen_: std::mt19937
+  #target_distrib_: std::uniform_int_distribution<>
+  #is_loading_: bool
+}
+
+class GridSfmlDrawer{
+  +GridSfmlDrawer(Logic& logic, const Point& roi_pos, const Point& roi_size)
+  +Draw(sf::RenderWindow& window, bool paused)
+
+  -DrawGrid(sf::RenderWindow& window)
+  -DrawPacman(sf::RenderWindow& window, bool paused)
+  -DrawGhosts(sf::RenderWindow& window, bool paused)
+  -logic_: Logic&
+  -roi_pos_: Point
+  -roi_size_: Point
+  -block_size_: double
+  -wall_drawer_: WallSfmlDrawer
+  -buff_drawer_: BuffSfmlDrawer
+  -coin_drawer_: CoinSfmlDrawer
+  -pacman_drawer_: PacmanSfmlDrawer
+  -red_ghost_drawer_: GhostSfmlDrawer
+  -pink_ghost_drawer_: GhostSfmlDrawer
+}
+
+class Grid {
+  +Grid()
+  +Load(const std::string& config_file): int32_t
+  +Set(Point p, ObjectId obj)
+  +At(Point p) const: ObjectId
+  +GetSize() const: Point
+  +Reset()
+
+  -is_constructed_: bool
+  -width_: uint32_t
+  -height_: uint32_t
+  -init_objects_: std::vector<std::vector<ObjectId>>
+  -objects_: std::vector<std::vector<ObjectId>>
+}
+
+class Logic {
+  +Logic(Statistics& statistics)
+  +LoadObjects(const std::string& config_file)
+  +Event Run()
+  +Reset()
+  +GridAt(Point p) const: ObjectId
+  +GetGridSize() const: Point
+  +GetPacmanPos() const: Point
+  +GetPacmanDirId() const: DirId
+  +GetGhostsCnt() const: uint32_t
+  +GetGhostType(uint32_t ind) const: GhostId
+  +GetGhostState(uint32_t ind) const: GhostState
+  +GetGhostPos(uint32_t ind) const: Point
+  +GetGhostDirId(uint32_t ind) const: DirId
+  +SetPacmanDir(MovingObject::DirId dir_id)
+
+  -ResetMovingObjects()
+  -LevelUp()
+  -grid_: Grid
+  -pacman_: MovingObject
+  -statistics_: Statistics&
+  -ghosts_: std::vector<Ghost*>
+}
+
+class MovingObject {
+  +MovingObject()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +Move(const Grid& grid)
+  +GetPos() const: Point
+  +GetDir() const: Point
+  +GetDirId() const: DirId
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+}
+
+class PacmanSfmlDrawer {
+  +PacmanSfmlDrawer(double block_size)
+  +Draw(sf::RenderWindow& window, const Point& pos, const MovingObject::DirId& dir, bool paused)
+
+  -step_: int
+  -texture_: sf::Texture
+  -pacman_: sf::RectangleShape
+}
+
+class PauseSfmlDrawer {
+  +PauseSfmlDrawer(const Point& roi_pos, const Point& roi_size)
+  +Draw(sf::RenderWindow& window)
+
+  -texture_: sf::Texture
+  -rect_: sf::RectangleShape
+}
+
+class Point {
+  {static} +kEps: const double
+  +x: double
+  +y: double
+  +Point(double x, double y)
+  +operator+=(const Point& p): Point&
+  +operator-=(const Point& p): Point&
+  +operator*=(double k): Point&
+  +operator/=(double K): Point&
+  +Len2() const: double
+  +Len() const: double
+}
+
+class RedGhost {
+  +RedGhost()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+' class BlueGhost {
+'   +BlueGhost()
+'   +Load(const std::string& config_file)
+'   +SetNextDir(DirId next_dir_id)
+'   +GetPos() const: Point
+'   +Touches(const MovingObject& obj) const: bool
+'   +Reset()
+'   +GetType() const: GhostId
+'   +Move(const Grid& grid, Point pacman_pos)
+
+'   {static} #size: const double
+'   #dir_id_: DirId
+'   #spawn_dir_id_: DirId
+'   #cur_dir_id_: DirId
+'   #next_dir_id_: DirId
+'   #spawn_pos_: Point
+'   #pos_: Point
+'   #dir_: Point
+'   #speed_: double
+'   #SetDir(DirId dir_id)
+'   #TryMove(const Grid& grid): bool
+'   #SetTarget(const Point& pacman_pos)
+'   #target_: Point
+'   #type_: GhostId
+' }
+
+class PinkGhost {
+  +PinkGhost()
+  +Load(const std::string& config_file)
+  +SetNextDir(DirId next_dir_id)
+  +GetPos() const: Point
+  +Touches(const MovingObject& obj) const: bool
+  +Reset()
+  +GetType() const: GhostId
+  +Move(const Grid& grid, Point pacman_pos)
+
+  {static} #size: const double
+  #dir_id_: DirId
+  #spawn_dir_id_: DirId
+  #cur_dir_id_: DirId
+  #next_dir_id_: DirId
+  #spawn_pos_: Point
+  #pos_: Point
+  #dir_: Point
+  #speed_: double
+  #SetDir(DirId dir_id)
+  #TryMove(const Grid& grid): bool
+  #SetTarget(const Point& pacman_pos)
+  #target_: Point
+  #type_: GhostId
+}
+
+' class YellowGhost {
+'   +YellowGhost()
+'   +Load(const std::string& config_file)
+'   +SetNextDir(DirId next_dir_id)
+'   +GetPos() const: Point
+'   +Touches(const MovingObject& obj) const: bool
+'   +Reset()
+'   +GetType() const: GhostId
+'   +Move(const Grid& grid, Point pacman_pos)
+
+'   {static} #size: const double
+'   #dir_id_: DirId
+'   #spawn_dir_id_: DirId
+'   #cur_dir_id_: DirId
+'   #next_dir_id_: DirId
+'   #spawn_pos_: Point
+'   #pos_: Point
+'   #dir_: Point
+'   #speed_: double
+'   #SetDir(DirId dir_id)
+'   #TryMove(const Grid& grid): bool
+'   #SetTarget(const Point& pacman_pos)
+'   #target_: Point
+'   #type_: GhostId
+' }
+
+class ScoreSfmlDrawer{
+  +ScoreSfmlDrawer(Statistics& statistics, const Point& roi_pos, const Point& roi_size)
+  +Draw(sf::RenderWindow& window)
+
+  -statistics_: Statistics&
+  -roi_pos_: Point
+  -roi_size_: Point
+  -bg_texture_: sf::Texture
+  -bg_rect_: sf::RectangleShape
+  -pacman_size_: double
+  -pacman_texture_: sf::Texture
+  -pacman_rect_: sf::RectangleShape
+  -font_: sf::Font
+  -score_: sf::Text
+  -level_: sf::Text
+}
+
+class SfmlSoundPlayer {
+  +SfmlSoundPlayer(const std::string& file_name, bool wait_for_end)
+  +Play()
+  +Stop()
+
+  -buffer_: sf::SoundBuffer
+  -sound_: sf::Sound
+  -wait_for_end_: bool
+}
+
+class SfmlSounds {
+  +SfmlSounds()
+  +Run(const Logic::Event logic_event)
+  +Mute()
+
+  -level_started_: SfmlSoundPlayer
+  -money_eaten_: SfmlSoundPlayer
+  -ghost_eaten_: SfmlSoundPlayer
+  -pacman_died_: SfmlSoundPlayer
+}
+
+class SfmlUI {
+  +SfmlUI(Logic& logic, Statistics& statistics, const Point& size)
+  +Run(const Logic::Event& logic_event): Signal
+
+  #Draw()
+  #CheckClicks(): Signal
+
+  -window_: sf::RenderWindow
+  -grid_size_: Point
+  -grid_drawer_: GridSfmlDrawer
+  -score_drawer_: ScoreSfmlDrawer
+  -pause_drawer_: PauseSfmlDrawer
+  -gameover_drawer_: GameoverSfmlDrawer
+  -IsKeyClicked(sf::Keyboard::Key key, uint32_t ind): bool
+  -is_pressed_: std::vector<bool>
+  -state_: AppState
+}
+
+' class ConsoleUI {
+'   +ConsoleUI(Logic& logic, const Point& size)
+'   +Run(): bool
+
+'   #Draw()
+'   #DrawGrid()
+'   #DrawWall(const Point& pos)
+'   #DrawBuff(const Point& pos)
+'   #DrawCoin(const Point& pos)
+'   #DrawPacman()
+'   #DrawGhosts()
+'   #CheckClicks()
+
+'   -block_size_: double
+'   -IsKeyClicked(uint32_t ind): bool
+'   -is_pressed_: std::vector<bool>
+' }
+
+abstract class Sounds {
+  +Sounds()
+  {abstract} +Run(const Logic::Event logic_event)
+  {abstract} +Mute()
+
+  #muted_: bool
+}
+
+class Statistics {
+  +Statistics()
+  +Load(const std::string& config_file)
+  +DecreaseLives()
+  +AddCoinScore()
+  +AddBonusScore()
+  +NextLevel()
+  +IsAlive(): bool
+  +IsLevelBeaten(): bool
+  +GetLives(): int32_t
+  +GetScore(): int32_t
+  +GetLevel(): int32_t
+  +SoftReset()
+  +HardReset()
+
+  -init_lives_: int32_t
+  -lives_: int32_t
+  -score_: int32_t
+  -coin_score_: int32_t
+  -bonus_score_: int32_t
+  -ghost_score_: int32_t
+  -init_coins_cnt_: int32_t
+  -coins_cnt_: int32_t
+  level_: int32_t
+}
+
+abstract class UI {
+  +UI(Logic& logic, Statistics& statistics)
+  {abstract} +Run(const Logic::Event& logic_event): Signal
+
+  #logic_: Logic&
+  #statistics_: Statistics&
+  {abstract} #Draw()
+  {abstract} #CheckClicks(): Signal
+}
+
+class WallSfmlDrawer {
+  +WallSfmlDrawer(Logic& logic, double block_size)
+  +Draw(sf::RenderWindow& window, const Point& pos, const Point& pos_in_logic)
+
+  -logic_: Logic&
+  -texture_: sf::Texture
+  -wall_: sf::RectangleShape
+  -dx: std::vector<int>
+  -dy: std::vector<int>
+}
+
+enum AppState {
+  InGame
+  Paused
+  GameOver
+}
+
+enum ApplicationMode {
+  Console
+  Sfml
+}
+
+enum GhostId {
+  Red
+  ' Blue
+  Pink
+  ' Yellow
+}
+
+enum GhostState {
+  Wandering
+  Hunting
+  RunningAway
+  Reviving
+}
+
+enum ObjectId {
+  Nothing
+  Wall
+  Coin
+  Buff
+  Bonus
+}
+
+enum Event{
+  Nothing
+  LevelStarted
+  MoneyEaten
+  GhostEaten
+  PacmanDied
+  GameEnded
+}
+
+enum DirId {
+  Left
+  Right
+  Up
+  Down
+}
+
+enum Signal {
+  Nothing
+  WindowClosed
+  Paused
+  Muted
+  NewGame
+}
+
+Application +.. ApplicationMode
+Ghost +.. GhostId
+Ghost +.. GhostState
+Grid +.. ObjectId
+Logic +.. Event
+MovingObject +.. DirId
+UI +.. Signal
+
+Application *-- Logic
+Application *-- UI
+Application *-- Sounds
+Application *-- AppState
+
+Logic *-- Grid
+Logic *-- MovingObject
+Logic *-- Statistics
+Logic *-- Ghost
+
+UI -- Logic
+UI <|.. SfmlUI
+UI <|.. ConsoleUI
+
+SfmlUI *-- GridSfmlDrawer
+SfmlUI *-- ScoreSfmlDrawer
+SfmlUI *-- PauseSfmlDrawer
+SfmlUI *-- GameoverSfmlDrawer
+
+GridSfmlDrawer *-- WallSfmlDrawer
+GridSfmlDrawer *-- BuffSfmlDrawer
+GridSfmlDrawer *-- CoinSfmlDrawer
+GridSfmlDrawer *-- PacmanSfmlDrawer
+GridSfmlDrawer *-- GhostSfmlDrawer
+
+Sounds <|.. SfmlSounds
+
+SfmlSounds *-- SfmlSoundPlayer
+
+MovingObject <|-- Ghost
+Ghost <|.. RedGhost
+' Ghost <|.. BlueGhost
+Ghost <|.. PinkGhost
+' Ghost <|.. YellowGhost
+
+UI -- Point
+Grid -- Point
+MovingObject -- Point
+
+@enduml
